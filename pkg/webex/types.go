@@ -154,3 +154,54 @@ type MeetingDetails struct {
 }
 
 */
+
+/*
+   {
+     "registrantId": "123456",
+     "status": "pending",
+     "firstName": "bob",
+     "lastName": "Lee",
+     "email": "bob@cisco.com",
+     "jobTitle": "manager",
+     "companyName": "cisco",
+     "address1": "address1 string",
+     "address2": "address2 string",
+     "city": "New York",
+     "state": "New York",
+     "zipCode": 123456,
+     "countryRegion": "America",
+     "workPhone": "+1 123456",
+     "fax": "123456",
+     "registrationTime": "2021-09-07T09:29:13+08:00"
+*/
+type Participant struct {
+	ID          string `json:"id"`
+	Host        bool   `json:"host"`
+	CoHost      bool   `json:"coHost"`
+	Email       string `json:"email"`
+	DisplayName string `json:"displayName"`
+	State       string `json:"state"`
+	JoinedTime  string `json:"joinedTime"`
+}
+
+type ParticipantsResponse struct {
+	Items []Participant `json:"items"`
+}
+
+type BreakoutSessionsRequest struct {
+	HostEmail string     `json:"hostEmail"`
+	SendEmail bool       `json:"sendEmail"`
+	Items     []Breakout `json:"items"`
+}
+
+type BreakoutSessionsResponse struct {
+	Items []Breakout `json:"items"`
+}
+
+type Breakout struct {
+	Name     string   `json:"name"`
+	Invitees []string `json:"invitees"`
+}
+
+type Match []string // list of emails
+type Matches []Match

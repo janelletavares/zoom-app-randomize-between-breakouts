@@ -2,7 +2,10 @@ package io
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"os"
+	"time"
 
 	"github.com/joeshaw/envdecode"
 
@@ -28,7 +31,7 @@ type Details struct {
 }
 
 type Session struct {
-	PerMeeting map[int]matching.BreakoutMatches
+	PerMeeting map[string]*matching.Breakouts
 }
 
 func ReadDetailsFromFile() (*Details, error) {
@@ -66,7 +69,16 @@ func ReadSessionFromFile() (*Session, error) {
 
 	err = json.Unmarshal(bytes, &s)
 	return &s, err
+}
 
+func WriteSessionToFile(s *Session) error {
+	fmt.Printf("About to write Session to file...\n%s\n", spew.Sdump(s))
+	bytes, err := json.Marshal(s)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(sessionFilename, bytes, 0644)
 }
 
 func ReadConfigFromEnvironment() (*EnvVars, error) {
@@ -77,3 +89,24 @@ func ReadConfigFromEnvironment() (*EnvVars, error) {
 	return &e, nil
 }
 
+func (s *Session) SessionInProgress(meetingID string) (*matching.Breakouts, error) {
+	if s == nil {
+		var err error
+		s, err = ReadSessionFromFile()
+		if err != nil {
+			return nil, err
+		}
+	}
+	return s.PerMeeting[meetingID], nil
+}
+
+func (s *Session) UpdateSession(meetingID string, latest matching.Breakout) error {
+	b := s.PerMeeting[meetingID]
+	if b == nil {
+		b = &matching.Breakouts{}
+	}
+	b.Timestamp = time.Now()
+	b.Breakouts = append(b.Breakouts, latest)
+	s.PerMeeting[meetingID] = b
+	return WriteSessionToFile(s)
+}
