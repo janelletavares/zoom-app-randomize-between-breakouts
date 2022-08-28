@@ -30,7 +30,7 @@ func main() {
 			os.Exit(1)
 		}
 		runOauthRedirectServer(envVars.ClientID, envVars.ClientSecret, envVars.RedirectURI, envVars.AccessToken)
-	case "list-meetings":
+	case "meetings":
 		// grab token from file
 		d, err := io.ReadDetailsFromFile()
 		wbx := webex.New(ctx, d.AccessToken)
@@ -88,7 +88,7 @@ func main() {
 		if err != nil {
 			fmt.Printf("could not determine if there was a meeting in progress: %v\n", err)
 		}
-		if s != nil {
+		if breakouts != nil {
 			fmt.Printf("Found session from %v. Resume this session (Y/n)?\n", breakouts.Timestamp)
 			var response string
 			_, _ = fmt.Scanln(&response) // wait for input to do it again
@@ -130,7 +130,12 @@ func main() {
 
 			// start breakouts
 			fmt.Printf("Trying to start breakouts...\n")
-			res, err := api.PutBreakoutSession(meetingID, convertBreakoutToRequest(breakout))
+			res, err := api.DeleteBreakoutSessions(meetingID)
+			if err != nil {
+				fmt.Printf("Unable to delete breakout sessions... here goes nothing\n")
+			}
+
+			res, err = api.PutBreakoutSession(meetingID, convertBreakoutToRequest(breakout))
 			if err == nil && len(res.Items) == len(breakout) {
 				fmt.Printf("Success!\n")
 				fmt.Printf("Response: %s\n", spew.Sdump(res))

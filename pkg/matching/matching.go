@@ -120,13 +120,17 @@ func (b *Breakouts) UpdateMatch() {
 }
 
 func RegenerateMatchesHash(b *Breakouts) error {
+	fmt.Printf("Rebuilding the matches hash...\n")
 	matchesHash = make(map[string]bool)
+	fmt.Printf("matchesHashBefore: %+v\n", matchesHash)
 	for _, b := range b.Breakouts {
 		for _, m := range b {
+			fmt.Printf("match: %v\n", m)
 			if !strings.Contains(m.Participants[0].DisplayName, DoNotMatch) {
 				RegisterMatch(m.Participants[0].ID, m.Participants[0].ID)
 			}
 		}
 	}
+	fmt.Printf("matchesHashAfter: %+v\n", matchesHash)
 	return nil
 }

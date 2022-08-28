@@ -21,6 +21,7 @@ type API interface {
 	ListMeetings() (*MeetingResponse, error)
 	ListParticipants(meetingID string) (*ParticipantsResponse, error)
 	GetBreakoutSession(meetingID string) (*BreakoutSessionsResponse, error)
+	DeleteBreakoutSessions(meetingID string) (*BreakoutSessionsResponse, error)
 	PutBreakoutSession(meetingID string, breakout []Match) (*BreakoutSessionsResponse, error)
 }
 
@@ -131,6 +132,24 @@ func (a *api) GetBreakoutSession(meetingID string) (*BreakoutSessionsResponse, e
 	response := &BreakoutSessionsResponse{}
 	res, err := a.requestWrapper(a.ctx,
 		http.MethodGet,
+		fmt.Sprintf("https://webexapis.com/v1/meetings/%s/breakoutSessions", meetingID),
+		nil)
+	defer res.Body.Close()
+	if err != nil {
+		return response, err
+	}
+
+	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+		return nil, fmt.Errorf("could not parse JSON response: %v", err)
+	}
+	return response, nil
+}
+
+func (a *api) DeleteBreakoutSessions(meetingID string) (*BreakoutSessionsResponse, error) {
+	// DELETE /v1/meetings/{meetingId}/breakoutSessions
+	response := &BreakoutSessionsResponse{}
+	res, err := a.requestWrapper(a.ctx,
+		http.MethodDelete,
 		fmt.Sprintf("https://webexapis.com/v1/meetings/%s/breakoutSessions", meetingID),
 		nil)
 	defer res.Body.Close()

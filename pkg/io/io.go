@@ -73,6 +73,9 @@ func ReadSessionFromFile() (*Session, error) {
 
 func WriteSessionToFile(s *Session) error {
 	fmt.Printf("About to write Session to file...\n%s\n", spew.Sdump(s))
+	if s == nil {
+		return nil
+	}
 	bytes, err := json.Marshal(s)
 	if err != nil {
 		return err
@@ -96,13 +99,24 @@ func (s *Session) SessionInProgress(meetingID string) (*matching.Breakouts, erro
 		if err != nil {
 			return nil, err
 		}
+		if s == nil {
+			return nil, fmt.Errorf("could not read session from file")
+		}
 	}
 	return s.PerMeeting[meetingID], nil
 }
 
 func (s *Session) UpdateSession(meetingID string, latest matching.Breakout) error {
-	b := s.PerMeeting[meetingID]
-	if b == nil {
+	if s == nil {
+		fmt.Println("clearing PerMeeting")
+		s.PerMeeting = make(map[string]*matching.Breakouts)
+	}
+	if s.PerMeeting == nil {
+		fmt.Println("clearing PerMeeting")
+		s.PerMeeting = make(map[string]*matching.Breakouts)
+	}
+	b, ok := s.PerMeeting[meetingID]
+	if !ok || b == nil {
 		b = &matching.Breakouts{}
 	}
 	b.Timestamp = time.Now()
